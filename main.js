@@ -10,7 +10,7 @@ class ScratchEngine {
         this.isDrawing = false;
         this.options = {
             brushSize: 35,
-            threshold: 80,
+            threshold: 50,
             onThresholdMet: () => {},
             ...options
         };
@@ -211,28 +211,30 @@ class SpeettoGame {
         const colors = ['#e60012', '#f9d900', '#231815', '#ffffff', '#ffeb3b', '#4caf50', '#2196f3'];
         const shapes = ['circle', 'square'];
         
+        console.log('Firing confetti!');
+        
         for (let i = 0; i < 150; i++) {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
             
             // Random styles
             const color = colors[Math.floor(Math.random() * colors.length)];
-            const shape = shapes[Math.floor(Math.random() * shapes.shape)];
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
             
             confetti.style.backgroundColor = color;
             confetti.style.left = '50%';
             confetti.style.top = '50%';
-            confetti.style.width = Math.random() * 10 + 5 + 'px';
-            confetti.style.height = Math.random() * 10 + 5 + 'px';
+            confetti.style.width = Math.random() * 12 + 6 + 'px';
+            confetti.style.height = Math.random() * 12 + 6 + 'px';
             if (shape === 'circle') confetti.style.borderRadius = '50%';
             
             document.body.appendChild(confetti);
 
             // Explosion effect from center
-            const destinationX = (Math.random() - 0.5) * window.innerWidth * 1.5;
-            const destinationY = (Math.random() - 0.5) * window.innerHeight * 1.5;
+            const destinationX = (Math.random() - 0.5) * window.innerWidth * 1.8;
+            const destinationY = (Math.random() - 0.5) * window.innerHeight * 1.8;
             const rotation = Math.random() * 720;
-            const delay = Math.random() * 200;
+            const delay = Math.random() * 100;
 
             const animation = confetti.animate([
                 { 
@@ -255,23 +257,25 @@ class SpeettoGame {
 
         // Additional rain effect from top
         setTimeout(() => {
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 70; i++) {
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti';
                 confetti.style.left = Math.random() * 100 + 'vw';
                 confetti.style.top = '-20px';
                 confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
                 document.body.appendChild(confetti);
 
                 confetti.animate([
                     { transform: 'translate3d(0, 0, 0) rotate(0deg)', opacity: 1 },
-                    { transform: `translate3d(${(Math.random() - 0.5) * 100}px, ${window.innerHeight + 20}px, 0) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                    { transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${window.innerHeight + 20}px, 0) rotate(${Math.random() * 1000}deg)`, opacity: 0 }
                 ], {
-                    duration: 2000 + Math.random() * 2000,
+                    duration: 2500 + Math.random() * 2500,
                     easing: 'linear'
                 }).onfinish = () => confetti.remove();
             }
-        }, 500);
+        }, 300);
     }
 
     showWinModal(prize) {

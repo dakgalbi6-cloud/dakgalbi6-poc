@@ -7,7 +7,8 @@ A realistic web-based scratch-off lottery simulator inspired by the South Korean
 - **Realistic Scratching:** Uses HTML5 Canvas and `globalCompositeOperation` for a natural erasing effect.
 - **Speetto 1000 Logic:** Matches "Lucky Numbers" with "My Numbers" to determine winners.
 - **Modern Aesthetics:** Vibrant colors, multi-layered shadows, and responsive design.
-- **Auto-Reveal:** Automatically reveals the entire area once 80% is scratched.
+- **Auto-Reveal:** Automatically reveals the entire area once 50% is scratched (optimized for user experience).
+- **Celebration Effect:** Enhanced confetti animation and pulse effects for winning numbers.
 
 ## Technical Implementation
 - **HTML5 Canvas:** Handles the scratchable overlay.
