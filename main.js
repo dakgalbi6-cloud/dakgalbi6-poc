@@ -1,16 +1,16 @@
 /**
  * Speetto 1000 Scratch-off Simulator
- * Improved Design & Logic
+ * Robust Version for Reliable Winning Actions
  */
 
 class ScratchEngine {
     constructor(canvasId, options = {}) {
         this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d');
+        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
         this.isDrawing = false;
         this.options = {
-            brushSize: 35,
-            threshold: 50,
+            brushSize: 45, // 브러시 크기 확대
+            threshold: 40, // 40%만 긁어도 자동 공개
             onThresholdMet: () => {},
             ...options
         };
@@ -26,31 +26,30 @@ class ScratchEngine {
 
     resize() {
         const rect = this.canvas.parentElement.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+        this.canvas.width = rect.width || 300;
+        this.canvas.height = rect.height || 180;
     }
 
     fill() {
         const { ctx, canvas } = this;
-        // Create a more realistic silver texture
+        // Silver background
         ctx.fillStyle = '#bdc3c7';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Pattern
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        // Grid Pattern for more texture
+        ctx.strokeStyle = 'rgba(0,0,0,0.05)';
         ctx.lineWidth = 1;
-        for (let i = 0; i < canvas.width; i += 10) {
+        for (let i = 0; i < canvas.width; i += 5) {
             ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i, canvas.height);
+            ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height);
             ctx.stroke();
         }
         
-        // Metallic sheen
+        // Metallic Sheen
         const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        grad.addColorStop(0, 'rgba(255,255,255,0.3)');
+        grad.addColorStop(0, 'rgba(255,255,255,0.4)');
         grad.addColorStop(0.5, 'rgba(0,0,0,0.1)');
-        grad.addColorStop(1, 'rgba(255,255,255,0.3)');
+        grad.addColorStop(1, 'rgba(255,255,255,0.4)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -69,6 +68,8 @@ class ScratchEngine {
         const move = (e) => {
             if (this.isDrawing) {
                 this.scratch(e);
+                // 실시간 체크 (너무 자주 하면 성능 저하되므로 10번 중 1번꼴로)
+                if (Math.random() < 0.1) this.checkScratched();
             }
         };
 
@@ -89,8 +90,8 @@ class ScratchEngine {
 
     scratch(e) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
 
         this.ctx.globalCompositeOperation = 'destination-out';
         this.ctx.beginPath();
@@ -99,15 +100,20 @@ class ScratchEngine {
     }
 
     checkScratched() {
+        if (!this.canvas.width || !this.canvas.height) return;
+
         const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         const pixels = imageData.data;
         let transparent = 0;
 
+        // 알파 채널이 150 미만(약 60% 이상 투명)이면 긁힌 것으로 간주
         for (let i = 3; i < pixels.length; i += 4) {
-            if (pixels[i] === 0) transparent++;
+            if (pixels[i] < 150) transparent++;
         }
 
         const percentage = (transparent / (pixels.length / 4)) * 100;
+        console.log(`Scratched: ${percentage.toFixed(2)}%`);
+
         if (percentage > this.options.threshold) {
             this.revealAll();
             this.options.onThresholdMet();
@@ -116,6 +122,7 @@ class ScratchEngine {
 
     revealAll() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.isDrawing = false; // 더 이상 긁기 방지
     }
 }
 
@@ -137,14 +144,24 @@ class SpeettoGame {
 
     init() {
         this.resetBtn.addEventListener('click', () => this.startNewGame());
-        this.modalClose.addEventListener('click', () => this.modal.classList.add('hidden'));
+        this.modalClose.addEventListener('click', () => {
+            this.modal.classList.add('hidden');
+            // 모달 닫을 때 꽃가루 정리
+            document.querySelectorAll('.confetti').forEach(el => el.remove());
+        });
         this.startNewGame();
     }
 
     startNewGame() {
+        console.log('Starting new game...');
         this.isFinished = false;
         this.generateNumbers();
         this.renderNumbers();
+        
+        // 캔버스 초기화
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.globalCompositeOperation = 'source-over'; // 원래대로 복구
         
         new ScratchEngine('scratch-canvas', {
             onThresholdMet: () => this.handleFinish()
@@ -152,17 +169,15 @@ class SpeettoGame {
     }
 
     generateNumbers() {
-        // One lucky number
         this.luckyNumber = Math.floor(Math.random() * 30) + 1;
         
-        // 6 player numbers for Speetto 1000 style grid
         this.myNumbers = Array.from({ length: 6 }, () => {
             const num = Math.floor(Math.random() * 30) + 1;
-            // Increased win chance slightly for better testing (25%)
-            const forceWin = Math.random() < 0.25;
+            // 당첨 확률 30%로 상향 (테스트 용이성)
+            const forceWin = Math.random() < 0.3;
             const finalNum = forceWin ? this.luckyNumber : num;
             
-            const prizeIdx = Math.random() < 0.7 ? 0 : Math.floor(Math.random() * this.prizes.length);
+            const prizeIdx = Math.random() < 0.6 ? 0 : Math.floor(Math.random() * this.prizes.length);
             
             return {
                 val: finalNum,
@@ -170,15 +185,13 @@ class SpeettoGame {
                 isWin: finalNum === this.luckyNumber
             };
         });
+        console.log('Lucky Number:', this.luckyNumber);
     }
 
     renderNumbers() {
-        // Render lucky number
         this.luckyEl.innerHTML = `<span>${this.luckyNumber}</span>`;
-
-        // Render my numbers (Fixed the [object] bug by accessing .val and .prize)
         this.myEl.innerHTML = this.myNumbers.map(n => `
-            <div class="number-cell ${this.isFinished && n.isWin ? 'winner' : ''}">
+            <div class="number-cell">
                 <span class="val">${n.val}</span>
                 <span class="prize">${n.prize}</span>
             </div>
@@ -188,8 +201,8 @@ class SpeettoGame {
     handleFinish() {
         if (this.isFinished) return;
         this.isFinished = true;
+        console.log('Game Finished! Checking wins...');
 
-        // Apply winning styles
         const cells = this.myEl.querySelectorAll('.number-cell');
         const wins = this.myNumbers.filter(n => n.isWin);
 
@@ -200,82 +213,60 @@ class SpeettoGame {
         });
 
         if (wins.length > 0) {
+            console.log('Winning action triggered!');
             this.fireConfetti();
             const prizeText = wins.map(w => w.prize).join(' + ');
-            // Delay modal to show the board and confetti first
-            setTimeout(() => this.showWinModal(prizeText), 1500);
+            setTimeout(() => this.showWinModal(prizeText), 1000);
         }
     }
 
     fireConfetti() {
         const colors = ['#e60012', '#f9d900', '#231815', '#ffffff', '#ffeb3b', '#4caf50', '#2196f3'];
-        const shapes = ['circle', 'square'];
         
-        console.log('Firing confetti!');
-        
-        for (let i = 0; i < 150; i++) {
-            const confetti = document.createElement('div');
-            confetti.className = 'confetti';
-            
-            // Random styles
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const shape = shapes[Math.floor(Math.random() * shapes.length)];
-            
-            confetti.style.backgroundColor = color;
-            confetti.style.left = '50%';
-            confetti.style.top = '50%';
-            confetti.style.width = Math.random() * 12 + 6 + 'px';
-            confetti.style.height = Math.random() * 12 + 6 + 'px';
-            if (shape === 'circle') confetti.style.borderRadius = '50%';
-            
-            document.body.appendChild(confetti);
-
-            // Explosion effect from center
-            const destinationX = (Math.random() - 0.5) * window.innerWidth * 1.8;
-            const destinationY = (Math.random() - 0.5) * window.innerHeight * 1.8;
-            const rotation = Math.random() * 720;
-            const delay = Math.random() * 100;
-
-            const animation = confetti.animate([
-                { 
-                    transform: `translate3d(-50%, -50%, 0) scale(0) rotate(0deg)`, 
-                    opacity: 1 
-                },
-                { 
-                    transform: `translate3d(calc(-50% + ${destinationX}px), calc(-50% + ${destinationY}px), 0) scale(1) rotate(${rotation}deg)`, 
-                    opacity: 0 
-                }
-            ], {
-                duration: 1500 + Math.random() * 1000,
-                easing: 'cubic-bezier(0, .9, .57, 1)',
-                delay: delay,
-                fill: 'forwards'
-            });
-
-            animation.onfinish = () => confetti.remove();
+        // 1. Center Blast
+        for (let i = 0; i < 100; i++) {
+            this.createConfettiPiece(window.innerWidth / 2, window.innerHeight / 2, true);
         }
 
-        // Additional rain effect from top
-        setTimeout(() => {
-            for (let i = 0; i < 70; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.top = '-20px';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = Math.random() * 10 + 5 + 'px';
-                document.body.appendChild(confetti);
-
-                confetti.animate([
-                    { transform: 'translate3d(0, 0, 0) rotate(0deg)', opacity: 1 },
-                    { transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${window.innerHeight + 20}px, 0) rotate(${Math.random() * 1000}deg)`, opacity: 0 }
-                ], {
-                    duration: 2500 + Math.random() * 2500,
-                    easing: 'linear'
-                }).onfinish = () => confetti.remove();
+        // 2. Continuous Rain
+        const rainInterval = setInterval(() => {
+            if (!this.isFinished) {
+                clearInterval(rainInterval);
+                return;
             }
-        }, 300);
+            this.createConfettiPiece(Math.random() * window.innerWidth, -20, false);
+        }, 50);
+
+        // 5초 후 비 멈춤
+        setTimeout(() => clearInterval(rainInterval), 5000);
+    }
+
+    createConfettiPiece(x, y, isBlast) {
+        const colors = ['#e60012', '#f9d900', '#231815', '#ffffff', '#ffeb3b', '#4caf50', '#2196f3'];
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        const size = Math.random() * 10 + 5;
+        confetti.style.width = size + 'px';
+        confetti.style.height = size + 'px';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = x + 'px';
+        confetti.style.top = y + 'px';
+        if (Math.random() > 0.5) confetti.style.borderRadius = '50%';
+        
+        document.body.appendChild(confetti);
+
+        const destX = isBlast ? (Math.random() - 0.5) * window.innerWidth * 1.5 : (Math.random() - 0.5) * 200;
+        const destY = isBlast ? (Math.random() - 0.5) * window.innerHeight * 1.5 : window.innerHeight + 20;
+
+        confetti.animate([
+            { transform: 'translate(0, 0) rotate(0deg)', opacity: 1 },
+            { transform: `translate(${destX}px, ${destY}px) rotate(${Math.random() * 1000}deg)`, opacity: 0 }
+        ], {
+            duration: isBlast ? 1500 + Math.random() * 1000 : 3000 + Math.random() * 2000,
+            easing: isBlast ? 'cubic-bezier(0, .9, .57, 1)' : 'linear',
+            fill: 'forwards'
+        }).onfinish = () => confetti.remove();
     }
 
     showWinModal(prize) {
