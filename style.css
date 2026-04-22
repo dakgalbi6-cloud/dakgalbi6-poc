@@ -1,1 +1,10 @@
-/* Add styles here */
+body {
+    margin: 0;
+    background-color: #000;
+    overflow: hidden; /* Prevent scrollbars */
+}
+
+#game-canvas {
+    display: block; /* Remove default canvas margin */
+    background-color: #1a1a1a;
+}
