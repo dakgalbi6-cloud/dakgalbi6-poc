@@ -158,8 +158,8 @@ class SpeettoGame {
         // 6 player numbers for Speetto 1000 style grid
         this.myNumbers = Array.from({ length: 6 }, () => {
             const num = Math.floor(Math.random() * 30) + 1;
-            // 20% win chance per cell for the PoC
-            const forceWin = Math.random() < 0.15;
+            // Increased win chance slightly for better testing (25%)
+            const forceWin = Math.random() < 0.25;
             const finalNum = forceWin ? this.luckyNumber : num;
             
             const prizeIdx = Math.random() < 0.7 ? 0 : Math.floor(Math.random() * this.prizes.length);
@@ -203,33 +203,75 @@ class SpeettoGame {
             this.fireConfetti();
             const prizeText = wins.map(w => w.prize).join(' + ');
             // Delay modal to show the board and confetti first
-            setTimeout(() => this.showWinModal(prizeText), 1200);
+            setTimeout(() => this.showWinModal(prizeText), 1500);
         }
     }
 
     fireConfetti() {
-        const colors = ['#e60012', '#f9d900', '#231815', '#ffffff', '#ffeb3b'];
-        for (let i = 0; i < 100; i++) {
+        const colors = ['#e60012', '#f9d900', '#231815', '#ffffff', '#ffeb3b', '#4caf50', '#2196f3'];
+        const shapes = ['circle', 'square'];
+        
+        for (let i = 0; i < 150; i++) {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
-            confetti.style.left = Math.random() * 100 + 'vw';
-            confetti.style.top = -10 + 'px';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+            
+            // Random styles
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const shape = shapes[Math.floor(Math.random() * shapes.shape)];
+            
+            confetti.style.backgroundColor = color;
+            confetti.style.left = '50%';
+            confetti.style.top = '50%';
+            confetti.style.width = Math.random() * 10 + 5 + 'px';
+            confetti.style.height = Math.random() * 10 + 5 + 'px';
+            if (shape === 'circle') confetti.style.borderRadius = '50%';
             
             document.body.appendChild(confetti);
 
+            // Explosion effect from center
+            const destinationX = (Math.random() - 0.5) * window.innerWidth * 1.5;
+            const destinationY = (Math.random() - 0.5) * window.innerHeight * 1.5;
+            const rotation = Math.random() * 720;
+            const delay = Math.random() * 200;
+
             const animation = confetti.animate([
-                { transform: `translate3d(0, 0, 0) rotate(0deg)`, opacity: 1 },
-                { transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${window.innerHeight + 100}px, 0) rotate(${Math.random() * 1000}deg)`, opacity: 0 }
+                { 
+                    transform: `translate3d(-50%, -50%, 0) scale(0) rotate(0deg)`, 
+                    opacity: 1 
+                },
+                { 
+                    transform: `translate3d(calc(-50% + ${destinationX}px), calc(-50% + ${destinationY}px), 0) scale(1) rotate(${rotation}deg)`, 
+                    opacity: 0 
+                }
             ], {
-                duration: 2000 + Math.random() * 3000,
+                duration: 1500 + Math.random() * 1000,
                 easing: 'cubic-bezier(0, .9, .57, 1)',
-                delay: Math.random() * 500
+                delay: delay,
+                fill: 'forwards'
             });
 
             animation.onfinish = () => confetti.remove();
         }
+
+        // Additional rain effect from top
+        setTimeout(() => {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-20px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                document.body.appendChild(confetti);
+
+                confetti.animate([
+                    { transform: 'translate3d(0, 0, 0) rotate(0deg)', opacity: 1 },
+                    { transform: `translate3d(${(Math.random() - 0.5) * 100}px, ${window.innerHeight + 20}px, 0) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], {
+                    duration: 2000 + Math.random() * 2000,
+                    easing: 'linear'
+                }).onfinish = () => confetti.remove();
+            }
+        }, 500);
     }
 
     showWinModal(prize) {
