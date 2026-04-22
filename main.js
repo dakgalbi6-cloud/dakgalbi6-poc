@@ -191,16 +191,44 @@ class SpeettoGame {
 
         // Apply winning styles
         const cells = this.myEl.querySelectorAll('.number-cell');
+        const wins = this.myNumbers.filter(n => n.isWin);
+
         this.myNumbers.forEach((n, i) => {
             if (n.isWin) {
                 cells[i].classList.add('winner');
             }
         });
 
-        const wins = this.myNumbers.filter(n => n.isWin);
         if (wins.length > 0) {
+            this.fireConfetti();
             const prizeText = wins.map(w => w.prize).join(' + ');
-            setTimeout(() => this.showWinModal(prizeText), 500);
+            // Delay modal to show the board and confetti first
+            setTimeout(() => this.showWinModal(prizeText), 1200);
+        }
+    }
+
+    fireConfetti() {
+        const colors = ['#e60012', '#f9d900', '#231815', '#ffffff', '#ffeb3b'];
+        for (let i = 0; i < 100; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.top = -10 + 'px';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+            
+            document.body.appendChild(confetti);
+
+            const animation = confetti.animate([
+                { transform: `translate3d(0, 0, 0) rotate(0deg)`, opacity: 1 },
+                { transform: `translate3d(${(Math.random() - 0.5) * 200}px, ${window.innerHeight + 100}px, 0) rotate(${Math.random() * 1000}deg)`, opacity: 0 }
+            ], {
+                duration: 2000 + Math.random() * 3000,
+                easing: 'cubic-bezier(0, .9, .57, 1)',
+                delay: Math.random() * 500
+            });
+
+            animation.onfinish = () => confetti.remove();
         }
     }
 
