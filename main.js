@@ -1,143 +1,209 @@
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
+/**
+ * Speetto 1000 Scratch-off Simulator
+ */
 
-canvas.width = 800;
-canvas.height = 600;
+class ScratchEngine {
+    constructor(canvasId, options = {}) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.isDrawing = false;
+        this.options = {
+            brushSize: 30,
+            threshold: 80,
+            onThresholdMet: () => {},
+            ...options
+        };
 
-// Player
-const player = {
-    x: canvas.width / 2 - 25,
-    y: canvas.height / 2 - 25,
-    width: 50,
-    height: 50,
-    color: '#00FF00',
-    speed: 5,
-    dx: 0,
-    dy: 0
-};
-
-// Enemies
-const enemies = [];
-
-function spawnEnemy() {
-    const size = Math.random() * 20 + 20; // Random size between 20 and 40
-    let x, y;
-
-    if (Math.random() < 0.5) {
-        x = Math.random() < 0.5 ? 0 - size : canvas.width + size;
-        y = Math.random() * canvas.height;
-    } else {
-        x = Math.random() * canvas.width;
-        y = Math.random() < 0.5 ? 0 - size : canvas.height + size;
+        this.init();
     }
 
-    const color = '#FF0000';
-    const speed = 2;
+    init() {
+        this.resize();
+        this.fill();
+        this.addEventListeners();
+    }
 
-    enemies.push({ x, y, size, color, speed });
-}
+    resize() {
+        const rect = this.canvas.parentElement.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+    }
 
-// Drawing
-function drawPlayer() {
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-}
+    fill() {
+        const { ctx, canvas } = this;
+        // Create a silver/gray gradient for the coating
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grad.addColorStop(0, '#bdc3c7');
+        grad.addColorStop(0.5, '#95a5a6');
+        grad.addColorStop(1, '#7f8c8d');
 
-function drawEnemies() {
-    enemies.forEach(enemy => {
-        ctx.fillStyle = enemy.color;
-        ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
-    });
-}
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-function clear() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-// Updates
-function newPos() {
-    player.x += player.dx;
-    player.y += player.dy;
-
-    // Wall detection
-    if (player.x < 0) player.x = 0;
-    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-    if (player.y < 0) player.y = 0;
-    if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
-}
-
-function updateEnemies() {
-    enemies.forEach(enemy => {
-        const angle = Math.atan2(player.y - (enemy.y - enemy.size / 2) + player.height/2, player.x - (enemy.x - enemy.size / 2) + player.width/2);
-        enemy.x += Math.cos(angle) * enemy.speed;
-        enemy.y += Math.sin(angle) * enemy.speed;
-
-        // Collision with player
-        if (
-            player.x < enemy.x + enemy.size &&
-            player.x + player.width > enemy.x &&
-            player.y < enemy.y + enemy.size &&
-            player.y + player.height > enemy.y
-        ) {
-            console.log('Game Over!');
+        // Add some "scratchable" texture
+        ctx.globalAlpha = 0.1;
+        for (let i = 0; i < 1000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? '#fff' : '#000';
+            ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1, 1);
         }
-    });
-}
+        ctx.globalAlpha = 1.0;
+    }
 
-function update() {
-    clear();
-    drawPlayer();
-    drawEnemies();
-    newPos();
-    updateEnemies();
-    requestAnimationFrame(update);
-}
+    addEventListeners() {
+        const start = (e) => {
+            this.isDrawing = true;
+            this.scratch(e);
+        };
+        const end = () => {
+            this.isDrawing = false;
+            this.checkScratched();
+        };
+        const move = (e) => {
+            if (this.isDrawing) {
+                this.scratch(e);
+            }
+        };
 
-// Player Movement
-function moveUp() {
-    player.dy = -player.speed;
-}
+        this.canvas.addEventListener('mousedown', start);
+        this.canvas.addEventListener('mousemove', move);
+        this.canvas.addEventListener('mouseup', end);
+        this.canvas.addEventListener('mouseleave', end);
 
-function moveDown() {
-    player.dy = player.speed;
-}
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            start(e.touches[0]);
+        });
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            move(e.touches[0]);
+        });
+        this.canvas.addEventListener('touchend', end);
+    }
 
-function moveLeft() {
-    player.dx = -player.speed;
-}
+    scratch(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-function moveRight() {
-    player.dx = player.speed;
-}
+        this.ctx.globalCompositeOperation = 'destination-out';
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, this.options.brushSize, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
 
-function keyDown(e) {
-    const key = e.key.toLowerCase();
-    if (key === 'arrowright' || key === 'd') moveRight();
-    else if (key === 'arrowleft' || key === 'a') moveLeft();
-    else if (key === 'arrowup' || key === 'w') moveUp();
-    else if (key === 'arrowdown' || key === 's') moveDown();
-}
+    checkScratched() {
+        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        const pixels = imageData.data;
+        let transparent = 0;
 
-function keyUp(e) {
-    const key = e.key.toLowerCase();
-    if (
-        key === 'arrowright' || key === 'd' ||
-        key === 'arrowleft' || key === 'a' ||
-        key === 'arrowup' || key === 'w' ||
-        key === 'arrowdown' || key === 's'
-    ) {
-        player.dx = 0;
-        player.dy = 0;
+        for (let i = 0; i < pixels.length; i += 4) {
+            if (pixels[i + 3] === 0) {
+                transparent++;
+            }
+        }
+
+        const percentage = (transparent / (pixels.length / 4)) * 100;
+        if (percentage > this.options.threshold) {
+            this.revealAll();
+            this.options.onThresholdMet();
+        }
+    }
+
+    revealAll() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
-document.addEventListener('keydown', keyDown);
-document.addEventListener('keyup', keyUp);
+class SpeettoGame {
+    constructor() {
+        this.luckyNumbers = [];
+        this.myNumbers = [];
+        this.prizes = ['1,000원', '5,000원', '10,000원', '100,000원', '1,000,000원', '500,000,000원'];
+        this.isFinished = false;
 
-// Game Start
-setInterval(spawnEnemy, 1500); // Spawn a new enemy every 1.5 seconds
+        this.luckyEl = document.getElementById('lucky-numbers');
+        this.myEl = document.getElementById('my-numbers');
+        this.resetBtn = document.getElementById('reset-btn');
+        this.modal = document.getElementById('win-modal');
+        this.modalClose = document.getElementById('modal-close');
 
-update();
+        this.init();
+    }
 
+    init() {
+        this.resetBtn.addEventListener('click', () => this.startNewGame());
+        this.modalClose.addEventListener('click', () => this.modal.classList.add('hidden'));
+        this.startNewGame();
+    }
 
+    startNewGame() {
+        this.isFinished = false;
+        this.generateNumbers();
+        this.renderNumbers();
+        
+        new ScratchEngine('scratch-canvas', {
+            onThresholdMet: () => this.handleFinish()
+        });
+    }
 
+    generateNumbers() {
+        // Generate 2 lucky numbers (1-30)
+        this.luckyNumbers = Array.from({ length: 2 }, () => Math.floor(Math.random() * 30) + 1);
+        
+        // Generate 6 player numbers with prizes
+        this.myNumbers = Array.from({ length: 6 }, () => {
+            const num = Math.floor(Math.random() * 30) + 1;
+            // Determine prize based on simple probability (just for PoC)
+            const prizeIdx = Math.random() < 0.8 ? 0 : Math.floor(Math.random() * this.prizes.length);
+            return {
+                val: num,
+                prize: this.prizes[prizeIdx],
+                isWin: this.luckyNumbers.includes(num)
+            };
+        });
+    }
+
+    renderNumbers() {
+        this.luckyEl.innerHTML = this.luckyNumbers.map(n => `
+            <div class="number-item">
+                <span class="val">${n}</span>
+            </div>
+        `).join('');
+
+        this.myEl.innerHTML = this.myNumbers.map(n => `
+            <div class="number-item ${this.isFinished && n.isWin ? 'winner' : ''}">
+                <span class="val">${n}</span>
+                <span class="prize">${n.prize}</span>
+            </div>
+        `).join('');
+    }
+
+    handleFinish() {
+        if (this.isFinished) return;
+        this.isFinished = true;
+
+        // Re-render to show winning state (pulse animation etc)
+        this.myEl.innerHTML = this.myNumbers.map(n => `
+            <div class="number-item ${n.isWin ? 'winner' : ''}">
+                <span class="val">${n.val}</span>
+                <span class="prize">${n.prize}</span>
+            </div>
+        `).join('');
+
+        const wins = this.myNumbers.filter(n => n.isWin);
+        if (wins.length > 0) {
+            const totalPrize = wins.map(w => w.prize).join(', ');
+            this.showWinModal(totalPrize);
+        }
+    }
+
+    showWinModal(prize) {
+        document.getElementById('win-message').textContent = `당첨금: ${prize}`;
+        this.modal.classList.remove('hidden');
+    }
+}
+
+// Start the game
+window.addEventListener('load', () => {
+    new SpeettoGame();
+});

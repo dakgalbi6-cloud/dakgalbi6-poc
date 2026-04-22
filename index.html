@@ -1,13 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vampire Survivors Clone</title>
+    <title>스피또 1000 시뮬레이터</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="game-canvas"></canvas>
-    <script src="main.js"></script>
+    <div id="app">
+        <header>
+            <h1>SPEETTO 1000</h1>
+            <p>행운의 숫자를 맞춰보세요!</p>
+        </header>
+
+        <main>
+            <div id="ticket" class="ticket">
+                <div class="ticket-header">
+                    <div class="logo">SPEETTO <span>1000</span></div>
+                    <div class="serial">No. 2024-0422-001</div>
+                </div>
+
+                <div class="game-area">
+                    <div class="lucky-numbers-section">
+                        <h3>행운 숫자</h3>
+                        <div id="lucky-numbers" class="numbers-grid lucky">
+                            <!-- Lucky numbers will be injected here -->
+                        </div>
+                    </div>
+
+                    <div class="my-numbers-section">
+                        <h3>나의 숫자</h3>
+                        <div id="scratch-container" class="scratch-container">
+                            <div id="my-numbers" class="numbers-grid my">
+                                <!-- My numbers will be injected here -->
+                            </div>
+                            <canvas id="scratch-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ticket-footer">
+                    <div class="price">1,000원</div>
+                    <div class="disclaimer">재미로만 즐겨주세요.</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="reset-btn" class="btn">새 게임 시작</button>
+            </div>
+        </main>
+
+        <div id="win-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="win-title">축하합니다!</h2>
+                <p id="win-message">당첨금: 1,000,000원</p>
+                <button id="modal-close" class="btn">확인</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
