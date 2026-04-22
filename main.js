@@ -10,7 +10,7 @@ class ScratchEngine {
         this.isDrawing = false;
         this.options = {
             brushSize: 35,
-            threshold: 75,
+            threshold: 80,
             onThresholdMet: () => {},
             ...options
         };
@@ -155,8 +155,8 @@ class SpeettoGame {
         // One lucky number
         this.luckyNumber = Math.floor(Math.random() * 30) + 1;
         
-        // 4 player numbers for Speetto 1000 style grid
-        this.myNumbers = Array.from({ length: 4 }, () => {
+        // 6 player numbers for Speetto 1000 style grid
+        this.myNumbers = Array.from({ length: 6 }, () => {
             const num = Math.floor(Math.random() * 30) + 1;
             // 20% win chance per cell for the PoC
             const forceWin = Math.random() < 0.15;
