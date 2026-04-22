@@ -8,30 +8,31 @@
 </head>
 <body>
     <div id="app">
-        <header>
-            <h1>SPEETTO 1000</h1>
-            <p>행운의 숫자를 맞춰보세요!</p>
-        </header>
-
         <main>
             <div id="ticket" class="ticket">
                 <div class="ticket-header">
-                    <div class="logo">SPEETTO <span>1000</span></div>
-                    <div class="serial">No. 2024-0422-001</div>
+                    <div class="top-row">
+                        <span class="round">제 78회</span>
+                        <span class="type">즉석복권</span>
+                    </div>
+                    <div class="logo-area">
+                        <h1>스피또<span>1000</span></h1>
+                        <p class="prize-info">1등 당첨금 5억원</p>
+                    </div>
                 </div>
 
                 <div class="game-area">
-                    <div class="lucky-numbers-section">
-                        <h3>행운 숫자</h3>
-                        <div id="lucky-numbers" class="numbers-grid lucky">
-                            <!-- Lucky numbers will be injected here -->
+                    <div class="lucky-section">
+                        <div class="section-title">행운숫자</div>
+                        <div id="lucky-numbers" class="lucky-circle">
+                            <!-- Lucky number will be injected here -->
                         </div>
                     </div>
 
-                    <div class="my-numbers-section">
-                        <h3>나의 숫자</h3>
+                    <div class="scratch-area">
+                        <div class="section-title">나의 숫자</div>
                         <div id="scratch-container" class="scratch-container">
-                            <div id="my-numbers" class="numbers-grid my">
+                            <div id="my-numbers" class="my-numbers-grid">
                                 <!-- My numbers will be injected here -->
                             </div>
                             <canvas id="scratch-canvas"></canvas>
@@ -40,21 +41,28 @@
                 </div>
 
                 <div class="ticket-footer">
-                    <div class="price">1,000원</div>
-                    <div class="disclaimer">재미로만 즐겨주세요.</div>
+                    <div class="serial-area">
+                        <div class="barcode"></div>
+                        <span class="serial-num">15948-26154-18451-25141</span>
+                    </div>
+                    <div class="price-tag">
+                        <span>금액</span>
+                        <strong>1,000원</strong>
+                    </div>
                 </div>
             </div>
 
             <div class="controls">
-                <button id="reset-btn" class="btn">새 게임 시작</button>
+                <button id="reset-btn" class="btn-primary">새 복권 구매하기</button>
             </div>
         </main>
 
         <div id="win-modal" class="modal hidden">
             <div class="modal-content">
-                <h2 id="win-title">축하합니다!</h2>
+                <div class="modal-header">축하합니다!</div>
+                <div class="win-icon">🎉</div>
                 <p id="win-message">당첨금: 1,000,000원</p>
-                <button id="modal-close" class="btn">확인</button>
+                <button id="modal-close" class="btn-close">확인</button>
             </div>
         </div>
     </div>

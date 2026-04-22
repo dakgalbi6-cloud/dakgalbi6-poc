@@ -1,5 +1,6 @@
 /**
  * Speetto 1000 Scratch-off Simulator
+ * Improved Design & Logic
  */
 
 class ScratchEngine {
@@ -8,8 +9,8 @@ class ScratchEngine {
         this.ctx = this.canvas.getContext('2d');
         this.isDrawing = false;
         this.options = {
-            brushSize: 30,
-            threshold: 80,
+            brushSize: 35,
+            threshold: 75,
             onThresholdMet: () => {},
             ...options
         };
@@ -31,22 +32,27 @@ class ScratchEngine {
 
     fill() {
         const { ctx, canvas } = this;
-        // Create a silver/gray gradient for the coating
-        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        grad.addColorStop(0, '#bdc3c7');
-        grad.addColorStop(0.5, '#95a5a6');
-        grad.addColorStop(1, '#7f8c8d');
-
-        ctx.fillStyle = grad;
+        // Create a more realistic silver texture
+        ctx.fillStyle = '#bdc3c7';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Add some "scratchable" texture
-        ctx.globalAlpha = 0.1;
-        for (let i = 0; i < 1000; i++) {
-            ctx.fillStyle = Math.random() > 0.5 ? '#fff' : '#000';
-            ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1, 1);
+        // Pattern
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < canvas.width; i += 10) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, canvas.height);
+            ctx.stroke();
         }
-        ctx.globalAlpha = 1.0;
+        
+        // Metallic sheen
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grad.addColorStop(0, 'rgba(255,255,255,0.3)');
+        grad.addColorStop(0.5, 'rgba(0,0,0,0.1)');
+        grad.addColorStop(1, 'rgba(255,255,255,0.3)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     addEventListeners() {
@@ -55,8 +61,10 @@ class ScratchEngine {
             this.scratch(e);
         };
         const end = () => {
-            this.isDrawing = false;
-            this.checkScratched();
+            if (this.isDrawing) {
+                this.isDrawing = false;
+                this.checkScratched();
+            }
         };
         const move = (e) => {
             if (this.isDrawing) {
@@ -66,8 +74,7 @@ class ScratchEngine {
 
         this.canvas.addEventListener('mousedown', start);
         this.canvas.addEventListener('mousemove', move);
-        this.canvas.addEventListener('mouseup', end);
-        this.canvas.addEventListener('mouseleave', end);
+        window.addEventListener('mouseup', end);
 
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -77,7 +84,7 @@ class ScratchEngine {
             e.preventDefault();
             move(e.touches[0]);
         });
-        this.canvas.addEventListener('touchend', end);
+        window.addEventListener('touchend', end);
     }
 
     scratch(e) {
@@ -96,10 +103,8 @@ class ScratchEngine {
         const pixels = imageData.data;
         let transparent = 0;
 
-        for (let i = 0; i < pixels.length; i += 4) {
-            if (pixels[i + 3] === 0) {
-                transparent++;
-            }
+        for (let i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] === 0) transparent++;
         }
 
         const percentage = (transparent / (pixels.length / 4)) * 100;
@@ -116,9 +121,9 @@ class ScratchEngine {
 
 class SpeettoGame {
     constructor() {
-        this.luckyNumbers = [];
+        this.luckyNumber = 0;
         this.myNumbers = [];
-        this.prizes = ['1,000원', '5,000원', '10,000원', '100,000원', '1,000,000원', '500,000,000원'];
+        this.prizes = ['1,000원', '5,000원', '10,000원', '100,000원', '1,000,000원', '5억원'];
         this.isFinished = false;
 
         this.luckyEl = document.getElementById('lucky-numbers');
@@ -147,32 +152,34 @@ class SpeettoGame {
     }
 
     generateNumbers() {
-        // Generate 2 lucky numbers (1-30)
-        this.luckyNumbers = Array.from({ length: 2 }, () => Math.floor(Math.random() * 30) + 1);
+        // One lucky number
+        this.luckyNumber = Math.floor(Math.random() * 30) + 1;
         
-        // Generate 6 player numbers with prizes
-        this.myNumbers = Array.from({ length: 6 }, () => {
+        // 4 player numbers for Speetto 1000 style grid
+        this.myNumbers = Array.from({ length: 4 }, () => {
             const num = Math.floor(Math.random() * 30) + 1;
-            // Determine prize based on simple probability (just for PoC)
-            const prizeIdx = Math.random() < 0.8 ? 0 : Math.floor(Math.random() * this.prizes.length);
+            // 20% win chance per cell for the PoC
+            const forceWin = Math.random() < 0.15;
+            const finalNum = forceWin ? this.luckyNumber : num;
+            
+            const prizeIdx = Math.random() < 0.7 ? 0 : Math.floor(Math.random() * this.prizes.length);
+            
             return {
-                val: num,
+                val: finalNum,
                 prize: this.prizes[prizeIdx],
-                isWin: this.luckyNumbers.includes(num)
+                isWin: finalNum === this.luckyNumber
             };
         });
     }
 
     renderNumbers() {
-        this.luckyEl.innerHTML = this.luckyNumbers.map(n => `
-            <div class="number-item">
-                <span class="val">${n}</span>
-            </div>
-        `).join('');
+        // Render lucky number
+        this.luckyEl.innerHTML = `<span>${this.luckyNumber}</span>`;
 
+        // Render my numbers (Fixed the [object] bug by accessing .val and .prize)
         this.myEl.innerHTML = this.myNumbers.map(n => `
-            <div class="number-item ${this.isFinished && n.isWin ? 'winner' : ''}">
-                <span class="val">${n}</span>
+            <div class="number-cell ${this.isFinished && n.isWin ? 'winner' : ''}">
+                <span class="val">${n.val}</span>
                 <span class="prize">${n.prize}</span>
             </div>
         `).join('');
@@ -182,18 +189,18 @@ class SpeettoGame {
         if (this.isFinished) return;
         this.isFinished = true;
 
-        // Re-render to show winning state (pulse animation etc)
-        this.myEl.innerHTML = this.myNumbers.map(n => `
-            <div class="number-item ${n.isWin ? 'winner' : ''}">
-                <span class="val">${n.val}</span>
-                <span class="prize">${n.prize}</span>
-            </div>
-        `).join('');
+        // Apply winning styles
+        const cells = this.myEl.querySelectorAll('.number-cell');
+        this.myNumbers.forEach((n, i) => {
+            if (n.isWin) {
+                cells[i].classList.add('winner');
+            }
+        });
 
         const wins = this.myNumbers.filter(n => n.isWin);
         if (wins.length > 0) {
-            const totalPrize = wins.map(w => w.prize).join(', ');
-            this.showWinModal(totalPrize);
+            const prizeText = wins.map(w => w.prize).join(' + ');
+            setTimeout(() => this.showWinModal(prizeText), 500);
         }
     }
 
@@ -203,7 +210,6 @@ class SpeettoGame {
     }
 }
 
-// Start the game
 window.addEventListener('load', () => {
     new SpeettoGame();
 });

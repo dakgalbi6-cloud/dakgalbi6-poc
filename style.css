@@ -1,12 +1,11 @@
 :root {
-    --primary: #d32f2f;
-    --primary-dark: #b71c1c;
-    --secondary: #ffc107;
-    --text: #333;
-    --bg: #f5f5f5;
-    --ticket-bg: #fff;
-    --silver: linear-gradient(135deg, #bdc3c7, #2c3e50);
-    --shadow: 0 10px 30px rgba(0,0,0,0.1);
+    --speetto-red: #e60012;
+    --speetto-gold: #f9d900;
+    --speetto-dark: #231815;
+    --silver-start: #bdc3c7;
+    --silver-end: #7f8c8d;
+    --white: #ffffff;
+    --gray: #f4f4f4;
 }
 
 * {
@@ -16,9 +15,8 @@
 }
 
 body {
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background-color: #333;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -27,131 +25,136 @@ body {
 }
 
 #app {
-    max-width: 500px;
     width: 100%;
+    max-width: 480px;
+}
+
+/* Ticket Container */
+.ticket {
+    background-color: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+    border: 6px solid var(--speetto-red);
+}
+
+/* Header */
+.ticket-header {
+    background-color: var(--speetto-red);
+    color: var(--white);
+    padding: 15px;
+    text-align: left;
+}
+
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.logo-area h1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-style: italic;
+}
+
+.logo-area h1 span {
+    color: var(--speetto-gold);
+    margin-left: 5px;
+}
+
+.prize-info {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--speetto-gold);
+    margin-top: 5px;
+}
+
+/* Game Area */
+.game-area {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #fff9f9 100%);
+}
+
+.section-title {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--speetto-red);
+    margin-bottom: 8px;
     text-align: center;
 }
 
-header h1 {
-    font-size: 2.5rem;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-}
-
-header p {
-    color: #666;
-    margin-bottom: 2rem;
-}
-
-.ticket {
-    background: var(--ticket-bg);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-    position: relative;
-    border: 8px solid var(--primary);
-    margin-bottom: 2rem;
-}
-
-.ticket::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3仿真 1%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.03;
-    pointer-events: none;
-}
-
-.ticket-header {
-    background: var(--primary);
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    font-weight: 900;
-    font-size: 1.5rem;
-    letter-spacing: -1px;
-}
-
-.logo span {
-    color: var(--secondary);
-}
-
-.serial {
-    font-size: 0.7rem;
-    opacity: 0.8;
-}
-
-.game-area {
-    padding: 20px;
-    background: linear-gradient(to bottom, #fff, #fffde7);
-}
-
-h3 {
-    font-size: 1rem;
-    margin-bottom: 10px;
-    color: var(--primary-dark);
-}
-
-.lucky-numbers-section {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 2px dashed #ccc;
-}
-
-.numbers-grid {
+/* Lucky Number Circle */
+.lucky-circle {
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle at 30% 30%, #fff, #eee);
+    border: 4px solid var(--speetto-red);
+    border-radius: 50%;
+    margin: 0 auto;
     display: flex;
     justify-content: center;
-    gap: 15px;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--speetto-dark);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.number-item {
-    width: 60px;
-    height: 60px;
-    background: #fdfdfd;
-    border: 2px solid #eee;
-    border-radius: 50%;
+/* Scratch Area */
+.scratch-container {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background-color: #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 3px solid #ddd;
+}
+
+.my-numbers-grid {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+    background-color: #ddd;
+    padding: 5px;
+}
+
+.number-cell {
+    background-color: var(--white);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-weight: bold;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.number-item .val {
-    font-size: 1.2rem;
-}
-
-.number-item .prize {
-    font-size: 0.6rem;
-    color: #999;
-}
-
-.scratch-container {
-    position: relative;
-    width: 100%;
-    max-width: 360px;
-    margin: 0 auto;
-    aspect-ratio: 16 / 9;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-#my-numbers {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    background: #fff;
     padding: 10px;
+}
+
+.number-cell .val {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--speetto-dark);
+}
+
+.number-cell .prize {
+    font-size: 0.7rem;
+    color: #666;
+    font-weight: bold;
+}
+
+.number-cell.winner .val {
+    color: var(--speetto-red);
+    transform: scale(1.1);
 }
 
 #scratch-canvas {
@@ -161,101 +164,121 @@ h3 {
     height: 100%;
     cursor: crosshair;
     touch-action: none;
+    z-index: 2;
 }
 
+/* Footer */
 .ticket-footer {
     padding: 15px;
-    background: #f9f9f9;
+    background-color: #f9f9f9;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #eee;
+    align-items: flex-end;
+    border-top: 2px dashed #ccc;
 }
 
-.price {
-    font-weight: bold;
-    color: var(--primary);
+.barcode {
+    width: 120px;
+    height: 30px;
+    background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px);
+    margin-bottom: 5px;
 }
 
-.disclaimer {
+.serial-num {
+    font-size: 0.6rem;
+    font-family: monospace;
+    color: #888;
+}
+
+.price-tag {
+    text-align: right;
+}
+
+.price-tag span {
     font-size: 0.7rem;
-    color: #999;
+    display: block;
+    color: #666;
 }
 
-.btn {
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--primary);
+.price-tag strong {
+    font-size: 1.2rem;
+    color: var(--speetto-red);
+}
+
+/* Controls */
+.controls {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--speetto-red);
     color: white;
-    box-shadow: 0 4px 0 var(--primary-dark);
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(230, 0, 18, 0.3);
+    transition: transform 0.2s, background-color 0.2s;
 }
 
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 var(--primary-dark);
+.btn-primary:hover {
+    transform: translateY(-3px);
+    background-color: #c5000f;
 }
 
-.btn:active {
+.btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 2px 0 var(--primary-dark);
 }
 
+/* Modal */
 .modal {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.85);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 100;
-    transition: opacity 0.3s;
 }
 
-.modal.hidden {
-    display: none;
-    opacity: 0;
-}
+.modal.hidden { display: none; }
 
 .modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 16px;
+    background: var(--white);
+    padding: 40px;
+    border-radius: 24px;
     text-align: center;
-    max-width: 300px;
-    animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 320px;
+    border: 6px solid var(--speetto-gold);
 }
 
-@keyframes pop {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-#win-title {
-    color: var(--primary);
-    margin-bottom: 10px;
-}
-
-#win-message {
-    font-size: 1.2rem;
-    font-weight: bold;
+.modal-header {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--speetto-red);
     margin-bottom: 20px;
 }
 
-/* Win effect */
-.number-item.winner {
-    border-color: var(--secondary);
-    background: #fff8e1;
-    color: var(--primary-dark);
-    animation: pulse 1s infinite;
+.win-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+#win-message {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.btn-close {
+    background: var(--speetto-dark);
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
 }
